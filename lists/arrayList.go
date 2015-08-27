@@ -101,12 +101,12 @@ func (list *ArrayList) Clear() {
 }
 
 // sort the elements by comparator
-func (list *ArrayList) Sort(compartors ...container.CompareFunction) {
-	if len(compartors) == 0 {
+func (list *ArrayList) Sort(comparators ...container.CompareFunction) {
+	if len(comparators) == 0 {
 		sort.Sort(list)
 	}
 
-	compartor := compartors[0]
+	compartor := comparators[0]
 	list.compareFunc = compartor
 
 	sort.Sort(list)
