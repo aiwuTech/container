@@ -39,6 +39,10 @@ FAQ
 
 如果使用过程中遇到任何问题，希望主动与[aiwuTech团队](https://github.com/aiwuTech/)联系，也可提交[Issues](https://github.com/aiwuTech/container/issues)，我们会及时解决
 
+THANKS
+------
+
+container参考了很多[gods](https://github.com/emirpasic/gods)的设计，特别感谢！
 
 License
 -------
