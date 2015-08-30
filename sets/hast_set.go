@@ -16,49 +16,64 @@ package sets
 import (
 	"bytes"
 	"fmt"
+	"sync"
 )
 
 type HashSet struct {
-	m map[interface{}]bool
+	m    map[interface{}]bool
+	lock *sync.Mutex
 }
 
 func NewHashSet() *HashSet {
 	return &HashSet{
-		m: make(map[interface{}]bool),
+		m:    make(map[interface{}]bool),
+		lock: &sync.Mutex{},
 	}
 }
 
 func (set *HashSet) Add(elements ...interface{}) {
+	set.lock.Lock()
 	for _, e := range elements {
 		if !set.m[e] {
 			set.m[e] = true
 		}
 	}
+	set.lock.Unlock()
 }
 
 func (set *HashSet) Remove(elements ...interface{}) {
+	set.lock.Lock()
 	for _, e := range elements {
 		delete(set.m, e)
 	}
+	set.lock.Unlock()
 }
 
 // whether all the elements are in the set
 // return true if all in, or false
 func (set *HashSet) Contains(elements ...interface{}) bool {
+	set.lock.Lock()
 	for _, e := range elements {
 		if !set.m[e] {
+			set.lock.Unlock()
 			return false
 		}
 	}
+	set.lock.Unlock()
 	return true
 }
 
 func (set *HashSet) Clear() {
+	set.lock.Lock()
 	set.m = make(map[interface{}]bool)
+	set.lock.Unlock()
 }
 
 func (set *HashSet) Len() int {
-	return len(set.m)
+	set.lock.Lock()
+	len := len(set.m)
+	set.lock.Unlock()
+	return len
 }
 
 func (set *HashSet) Empty() bool {
@@ -75,18 +90,20 @@ func (set *HashSet) Same(other Set) bool {
 
 func (set *HashSet) Elements() []interface{} {
 	snapshot := make([]interface{}, 0)
+	set.lock.Lock()
 	for key := range set.m {
 		snapshot = append(snapshot, key)
 	}
+	set.lock.Unlock()
 
 	return snapshot
 }
 
 func (set *HashSet) String() string {
 	var buf bytes.Buffer
-	buf.WriteString("HashSet{")
+	buf.WriteString("HashSet{ ")
 	first := true
-	for key := range set.m {
+	for _, key := range set.Elements() {
 		if first {
 			first = false
 		} else {
@@ -94,7 +111,7 @@ func (set *HashSet) String() string {
 		}
 		buf.WriteString(fmt.Sprintf("%v", key))
 	}
-	buf.WriteString("}")
+	buf.WriteString(" }")
 
 	return buf.String()
 }
