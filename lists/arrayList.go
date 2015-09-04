@@ -53,10 +53,10 @@ func (list *ArrayList) Get(idx int) (interface{}, bool) {
 	return list.elements[idx], true
 }
 
-// remove the element form the arraylist, if success, return true, otherwise false
-func (list *ArrayList) Remove(idx int) bool {
+// remove the element form the arraylist
+func (list *ArrayList) Remove(idx int) {
 	if !list.inRange(idx) {
-		return false
+		return
 	}
 
 	list.elements[idx] = nil
@@ -64,7 +64,7 @@ func (list *ArrayList) Remove(idx int) bool {
 	list.size -= 1
 
 	list.shrink()
-	return true
+	return
 }
 
 // check if the elements are in the array list
@@ -100,14 +100,20 @@ func (list *ArrayList) Clear() {
 	list.elements = []interface{}{}
 }
 
+func (list *ArrayList) Clone() *ArrayList {
+	l := NewArrayList()
+	l.Add(list.Elements()...)
+	return l
+}
+
 // sort the elements by comparator
 func (list *ArrayList) Sort(comparators ...container.CompareFunction) {
 	if len(comparators) == 0 {
 		sort.Sort(list)
 	}
 
-	compartor := comparators[0]
-	list.compareFunc = compartor
+	comparator := comparators[0]
+	list.compareFunc = comparator
 
 	sort.Sort(list)
 }

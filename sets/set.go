@@ -99,6 +99,29 @@ func Intersect(one, other Set) Set {
 	return intersectedSet
 }
 
+// 集合one, other是否有交集
+func IsIntersect(one, other Set) bool {
+    if one == nil || one.Empty() || other == nil || other.Empty() {
+        return false
+    }
+
+    if one.Len() < other.Len() {
+        for _, v := range one.Elements() {
+            if other.Contains(v) {
+                return true
+            }
+        }
+    } else {
+        for _, v := range other.Elements() {
+            if one.Contains(v) {
+                return true
+            }
+        }
+    }
+
+    return false
+}
+
 // 求集合 one，other的差集
 func Difference(one, other Set) Set {
 	if one == nil || other == nil {

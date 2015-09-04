@@ -192,8 +192,8 @@ func (list *DoublyLinkedList) Sort(comparators ...container.CompareFunction) {
 		sort.Sort(list)
 	}
 
-	compartor := comparators[0]
-	list.compareFunc = compartor
+	comparator := comparators[0]
+	list.compareFunc = comparator
 
 	sort.Sort(list)
 }

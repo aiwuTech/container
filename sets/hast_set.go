@@ -24,6 +24,8 @@ type HashSet struct {
 	lock *sync.Mutex
 }
 
+var _ Set = &HashSet{}
+
 func NewHashSet() *HashSet {
 	return &HashSet{
 		m:    make(map[interface{}]bool),

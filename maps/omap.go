@@ -17,15 +17,16 @@ import (
 	"bytes"
 	"fmt"
 	"reflect"
+	"sync"
 )
 
 // 有序map接口
 type OrderedMapper interface {
 	MapInterface
 	// 获取key对应的第一个值
-	GetFirst(key interface {}) interface {}
+	GetFirst(key interface{}) interface{}
 	// 获取key对应的所有值
-	GetAll(key interface {}) []interface {}
+	GetAll(key interface{}) []interface{}
 	// 获取第一个键值，没有返回nil
 	FirstKey() interface{}
 	// 获取最后一个键值，没有返回nil
@@ -42,18 +43,30 @@ type omap struct {
 	keys     Keys
 	elemType reflect.Type
 	m        map[interface{}][]interface{}
+	lock     *sync.Mutex
 }
 
 func (m *omap) Get(key interface{}) interface{} {
-	return m.m[key]
+	m.lock.Lock()
+	e := m.m[key]
+	m.lock.Unlock()
+	return e
 }
 
-func (m *omap) GetFirst(key interface {}) interface {} {
-	return m.m[key][0]
+func (m *omap) GetFirst(key interface{}) interface{} {
+	m.lock.Lock()
+	var e interface{}
+	if len(m.m[key]) == 0 {
+		e = nil
+	} else {
+		e = m.m[key][0]
+	}
+	m.lock.Unlock()
+	return e
 }
 
-func (m *omap) GetAll(key interface {}) []interface {} {
-	return m.m[key]
+func (m *omap) GetAll(key interface{}) []interface{} {
+	return m.Get(key).([]interface{})
 }
 
 func (m *omap) isAcceptableElem(elem interface{}) bool {
@@ -73,48 +86,59 @@ func (m *omap) Put(key interface{}, elem interface{}) (interface{}, bool) {
 		return nil, false
 	}
 
+	m.lock.Lock()
 	oldElems, ok := m.m[key]
 	if ok {
 		m.m[key] = append(m.m[key], elem)
 	} else {
 		m.keys.Add(key)
-		m.m[key] = make([]interface {}, 0)
+		m.m[key] = make([]interface{}, 0)
 		m.m[key] = append(m.m[key], elem)
 	}
+	m.lock.Unlock()
 
 	return oldElems, true
 }
 
 func (m *omap) Remove(key interface{}) interface{} {
+	m.lock.Lock()
 	oldElem, ok := m.m[key]
-	delete(m.m, key)
 	if ok {
+		delete(m.m, key)
 		m.keys.Remove(key)
 	}
+	m.lock.Unlock()
 
 	return oldElem
 }
 
 func (m *omap) Clear() {
+	m.lock.Lock()
 	m.m = make(map[interface{}][]interface{})
 	m.keys.Clear()
+	m.lock.Unlock()
 }
 
 func (m *omap) Len() int {
+	m.lock.Lock()
 	length := 0
 	for _, val := range m.m {
 		length += len(val)
 	}
+	m.lock.Unlock()
 
 	return length
 }
 
 func (m *omap) Contains(keys ...interface{}) bool {
+	m.lock.Lock()
 	for key := range keys {
 		if _, ok := m.m[key]; !ok {
+			m.lock.Unlock()
 			return false
 		}
 	}
+	m.lock.Unlock()
 	return true
 }
 
@@ -156,7 +180,7 @@ func (m *omap) Sub(fromKey, toKey interface{}) OrderedMapper {
 	}
 
 	var key interface{}
-	var elems []interface {}
+	var elems []interface{}
 	for i := beginIndex; i < endIndex; i++ {
 		key = m.keys.Get(i)
 		elems = m.GetAll(key)
@@ -191,10 +215,12 @@ func (m *omap) Elements() []interface{} {
 }
 
 func (m *omap) ToMap() map[interface{}]interface{} {
+	m.lock.Lock()
 	replica := make(map[interface{}]interface{})
 	for k, v := range m.m {
 		replica[k] = v
 	}
+	m.lock.Unlock()
 
 	return replica
 }
@@ -226,7 +252,7 @@ func (m *omap) String() string {
 		key := m.keys.Get(i)
 		buf.WriteString(fmt.Sprintf("%v", key))
 		buf.WriteString(":")
-		buf.WriteString(fmt.Sprintf("%v", m.Get(key)))
+		buf.WriteString(fmt.Sprintf("%+v", m.Get(key)))
 	}
 	buf.WriteString("}")
 
@@ -238,5 +264,6 @@ func NewOrderMap(keys Keys, elemType reflect.Type) OrderedMapper {
 		keys:     keys,
 		elemType: elemType,
 		m:        make(map[interface{}][]interface{}),
+		lock:     &sync.Mutex{},
 	}
 }
