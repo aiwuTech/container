@@ -23,7 +23,7 @@ import (
 //   大于1: 第一个参数大于第二个参数
 type CompareFunction func(interface{}, interface{}) int8
 
-func validElements(elements ...interface{}) bool {
+func ValidElements(elements ...interface{}) bool {
 	for _, e := range elements {
 		if !reflect.ValueOf(e).IsValid() {
 			return false
@@ -33,7 +33,7 @@ func validElements(elements ...interface{}) bool {
 }
 
 func Float64CompareFunctionASC(e1, e2 interface{}) int8 {
-	if !validElements(e1, e2) {
+	if !ValidElements(e1, e2) {
 		return 0
 	}
 
@@ -54,7 +54,7 @@ func Float64CompareFunctionDESC(e1, e2 interface{}) int8 {
 }
 
 func Uint64CompareFunctionASC(e1, e2 interface{}) int8 {
-	if !validElements(e1, e2) {
+	if !ValidElements(e1, e2) {
 		return 0
 	}
 
@@ -69,7 +69,7 @@ func Uint64CompareFunctionDESC(e1, e2 interface{}) int8 {
 }
 
 func Int64CompareFunctionASC(e1, e2 interface{}) int8 {
-	if !validElements(e1, e2) {
+	if !ValidElements(e1, e2) {
 		return 0
 	}
 
@@ -84,7 +84,7 @@ func Int64CompareFunctionDESC(e1, e2 interface{}) int8 {
 }
 
 func IntCompareFunctionASC(e1, e2 interface{}) int8 {
-	if !validElements(e1, e2) {
+	if !ValidElements(e1, e2) {
 		return 0
 	}
 
@@ -99,7 +99,7 @@ func IntCompareFunctionDESC(e1, e2 interface{}) int8 {
 }
 
 func StringCompareFunction(e1, e2 interface{}) int8 {
-	if !validElements(e1, e2) {
+	if !ValidElements(e1, e2) {
 		return 0
 	}
 
